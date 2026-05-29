@@ -134,6 +134,24 @@
   input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,58,82,.18);}
   .card:focus-within{border-color:var(--navy);box-shadow:0 0 0 2px rgba(26,58,82,.12);}
 
+  /* ===== 音声入力セクション ===== */
+  .voice-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);
+    padding:14px;margin-bottom:14px;}
+  .voice-title{font-weight:700;color:var(--navy);margin-bottom:8px;font-size:14px;}
+  .voice-card textarea{width:100%;font-size:16px;padding:12px;border:1.5px solid var(--line);
+    border-radius:10px;resize:vertical;min-height:84px;font-family:inherit;line-height:1.5;color:var(--ink);}
+  .voice-card textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,58,82,.12);}
+  .voice-btn{width:100%;margin-top:10px;background:var(--accent);color:#fff;border:none;
+    border-radius:10px;font-size:15px;font-weight:700;padding:13px;cursor:pointer;}
+  .voice-btn:active{filter:brightness(.92);}
+  .voice-hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;}
+  /* ===== トースト ===== */
+  .flash{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);
+    background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;
+    box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:.25s;
+    z-index:50;max-width:90%;text-align:center;}
+  .flash.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
   /* ===== Preview (A4 sheet) ===== */
   .preview-actions{display:flex;gap:10px;max-width:680px;margin:0 auto 16px;}
   .preview-actions>*{flex:1;}
@@ -219,6 +237,18 @@
         </label>
 
         <div class="sect"><span>明　細</span></div>
+
+        <div class="voice-card">
+          <div class="voice-title">🎤 話して入力</div>
+          <textarea id="voiceText" placeholder="例）パナソニックの分電盤 BQR34204 を2個、テンパールのブレーカー B-32 を3個、VVFケーブル 100メートル
+（スマホはキーボードのマイクボタンで話せます）"></textarea>
+          <button class="voice-btn" id="voiceConvert">✨ AIで明細に変換</button>
+          <div class="voice-hint">
+            変換後は内容を確認・修正してから「PDFを作成」してください。<br>
+            ※本実装では <b>Gemini Flash</b> が解析します（この画面はデモ用の簡易解析です）
+          </div>
+        </div>
+
         <div id="rows"></div>
         <button class="addbtn" id="addRow">＋　行を追加</button>
       </div>
@@ -228,6 +258,7 @@
         <div class="card kbd-card">
           <div class="kbd-title">⌨ マウス不要・キーボードだけで完結</div>
           <ul class="kbd-list">
+            <li><span class="keys"><kbd>Ctrl</kbd>+<kbd>Enter</kbd></span> 音声欄で押すと <b>AI変換</b></li>
             <li><span class="keys"><kbd>Enter</kbd></span> 次の入力欄へ進む</li>
             <li><span class="keys"><kbd>Shift</kbd>+<kbd>Enter</kbd></span> 前の入力欄へ戻る</li>
             <li><span class="keys"><kbd>Enter</kbd></span> 最終欄(備考)で押すと <b>明細行を追加</b></li>
@@ -265,6 +296,8 @@
     </div>
   </div>
 </div>
+
+<div id="flash" class="flash"></div>
 
 <script>
   // ---- helpers ----
@@ -314,6 +347,50 @@
   $('#addRow').addEventListener('click',()=>addRow({},true));
   // 初期1行
   addRow({maker:'パナソニック',model:'BQR34204',name:'住宅分電盤',qty:2,note:'リミッタースペースなし'});
+
+  // ===== 音声テキスト → 明細 解析 =====
+  // ※デモ用の簡易ロジック。本実装では Gemini Flash が構造化を担当する。
+  const KNOWN_MAKERS=['パナソニック','Panasonic','三菱電機','三菱','日立','東芝','富士電機','オムロン',
+    '因幡電工','ネグロス','未来工業','河村電器','日東工業','テンパール','アメリカン電機',
+    'コイズミ','遠藤照明','大光電機','DAIKO','KOIZUMI','ENDO'];
+  function z2h(s){return (s||'').replace(/[０-９]/g,d=>String.fromCharCode(d.charCodeAt(0)-0xFEE0)).replace(/　/g,' ');}
+  function escRe(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+  function parseUtterance(text){
+    text=z2h(text).trim();
+    if(!text) return [];
+    const chunks=text.split(/[、，,。\n]+|あと|それと|プラス|および|加えて/).map(s=>s.trim()).filter(Boolean);
+    const rows=[];
+    for(let s of chunks){
+      // 数量
+      let qty='';
+      const qm=s.match(/(\d+)\s*(個|台|枚|本|セット|箱|巻|束|袋|ケース|m|メートル|組|張|缶)/);
+      if(qm){qty=qm[1]; s=s.replace(qm[0],' ');}
+      else{const qn=s.match(/(\d+)\s*$/); if(qn){qty=qn[1]; s=s.replace(qn[0],' ');}}
+      // メーカー
+      let maker='';
+      for(const mk of KNOWN_MAKERS){ if(s.includes(mk)){maker=mk; s=s.replace(mk,' '); break;} }
+      // 型式（英数字を含むトークン＝最長を採用）
+      let model='';
+      const tokens=s.match(/[A-Za-z][A-Za-z0-9\-]{2,}|\d+[A-Za-z][A-Za-z0-9\-]*/g);
+      if(tokens){ model=tokens.sort((a,b)=>b.length-a.length)[0].toUpperCase(); s=s.replace(new RegExp(escRe(model),'i'),' '); }
+      // 残り＝名称（助詞・記号を除去）
+      let name=s.replace(/[のをがにはへとや]/g,' ').replace(/\s+/g,' ').trim();
+      if(!maker&&!model&&!name&&!qty) continue;
+      rows.push({maker,model,name,qty,note:''});
+    }
+    return rows;
+  }
+  function runVoiceConvert(){
+    const parsed=parseUtterance($('#voiceText').value);
+    if(parsed.length===0){ alert('うまく解析できませんでした。テキストを確認するか、明細欄に直接入力してください。'); return; }
+    rowsEl.innerHTML=''; counter=0;
+    parsed.forEach(r=>addRow(r));
+    focusInput(rowsEl.querySelector('.f-maker'));
+    flash(`${parsed.length}件を明細に変換しました。内容をご確認ください。`);
+  }
+  function flash(msg){const el=$('#flash');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
+  $('#voiceConvert').addEventListener('click',runVoiceConvert);
+  $('#voiceText').addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runVoiceConvert();} });
 
   // ---- collect ----
   function collect(){
