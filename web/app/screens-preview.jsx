@@ -8,28 +8,32 @@ async function downloadSheetPDF(draft, flash) {
     try {
       flash && flash('PDFを作成しています…');
       if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (_) {} }
-      // Clone the sheet at native size so an ancestor transform (fit-to-screen
-      // scaling) can't distort the capture. All styles are inline → clone carries them.
+      // 重要: 画面はスマホ幅だが、PDFは A4 幅で出したい。
+      // そこでキャプチャ専用に「A4 相当の幅広 DOM」を生成してから画像化する。
+      // (画面のスマホ幅のまま撮ると縦長になり、ページに合わせて縮小→中央寄せの小さな帳票になる)
+      const CW = 980;                                  // A4本文相当の描画幅(px)
       const clone = el.cloneNode(true);
-      const w = el.offsetWidth || 380;
-      clone.style.width = w + 'px';
+      clone.style.width = CW + 'px';
       clone.style.margin = '0';
+      clone.style.boxShadow = 'none';
+      clone.style.borderRadius = '0';
+      clone.style.padding = '0';                       // 余白はPDF側のマージンで取る
       const holder = document.createElement('div');
-      holder.style.cssText = 'position:fixed;left:-10000px;top:0;width:' + w + 'px;background:#fff;z-index:-1;';
+      holder.style.cssText = 'position:fixed;left:-10000px;top:0;width:' + CW + 'px;background:#fff;z-index:-1;';
       holder.appendChild(clone);
       document.body.appendChild(holder);
-      const canvas = await window.html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+      const canvas = await window.html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false, windowWidth: CW });
       holder.remove();
       const JsPDF = window.jspdf.jsPDF;
       const pdf = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-      // contain-fit within the page so the sheet is never cropped
-      const pageW = 210, pageH = 297, margin = 12;
-      const availW = pageW - margin * 2, availH = pageH - margin * 2;
-      const ratio = canvas.width / canvas.height;
-      let iw = availW, ih = iw / ratio;
-      if (ih > availH) { ih = availH; iw = ih * ratio; }
-      const x = margin + (availW - iw) / 2;
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.96), 'JPEG', x, margin, iw, ih);
+      // A4 幅いっぱい(左右マージン約6.5mm)に配置。左端をフォーマットに合わせる。
+      const pageW = 210, pageH = 297, mx = 6.5, my = 8;
+      const availW = pageW - mx * 2;                   // ≈197mm
+      const availH = pageH - my * 2;                   // ≈281mm
+      let iw = availW, ih = iw * canvas.height / canvas.width;
+      if (ih > availH) { ih = availH; iw = ih * canvas.width / canvas.height; } // 念のため1ページに収める
+      const x = mx + (availW - iw) / 2;
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.96), 'JPEG', x, my, iw, ih);
       pdf.save(fname);
       flash && flash('発注書PDFを保存しました');
       return true;
@@ -42,7 +46,7 @@ async function downloadSheetPDF(draft, flash) {
 
 function PreviewScreen({ t, draft, onBack, onSend, flash }) {
   const items = draft.items.filter(it => it.maker || it.model || it.name || it.qty);
-  const MIN = 16;                                   // 空行を含め1ページを埋める
+  const MIN = 18;                                   // 空行を含め1ページを埋める(フォーマット準拠)
   const empties = Math.max(0, MIN - items.length);
   const [busy, setBusy] = React.useState(false);
   async function onDownload() { setBusy(true); await downloadSheetPDF(draft, flash); setBusy(false); }
