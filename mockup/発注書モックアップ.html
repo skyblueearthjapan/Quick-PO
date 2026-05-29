@@ -119,6 +119,21 @@
 
   .hidden{display:none !important;}
 
+  /* ===== keyboard hint (PC only) ===== */
+  #pc-hint{display:none;}
+  @media(min-width:980px){#pc-hint{display:block;}}
+  .kbd-card .kbd-title{font-weight:700;color:var(--navy);margin-bottom:10px;font-size:14px;}
+  .kbd-list{list-style:none;padding:0;margin:0;font-size:13px;color:#4a555e;}
+  .kbd-list li{padding:7px 0;border-bottom:1px dashed var(--line);display:flex;gap:8px;align-items:center;}
+  .kbd-list li:last-child{border-bottom:none;}
+  .kbd-list .keys{white-space:nowrap;}
+  kbd{display:inline-block;background:#fff;border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:6px;padding:1px 7px;font-family:ui-monospace,monospace;font-size:12px;
+    color:var(--navy);min-width:16px;text-align:center;}
+  /* keyboard focus を強調（PC操作の視認性） */
+  input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,58,82,.18);}
+  .card:focus-within{border-color:var(--navy);box-shadow:0 0 0 2px rgba(26,58,82,.12);}
+
   /* ===== Preview (A4 sheet) ===== */
   .preview-actions{display:flex;gap:10px;max-width:680px;margin:0 auto 16px;}
   .preview-actions>*{flex:1;}
@@ -208,11 +223,18 @@
         <button class="addbtn" id="addRow">＋　行を追加</button>
       </div>
 
-      <!-- 右：PCのみライブ案内 -->
-      <div class="pc-sticky" id="pc-hint" style="display:none">
-        <div class="card" style="text-align:center;color:var(--muted)">
-          PC表示では、ここに発注書プレビューを<br>リアルタイム表示する想定です。<br>
-          （モックでは「PDFを作成する」で確認できます）
+      <!-- 右：PCのキーボード操作ガイド -->
+      <div class="pc-sticky" id="pc-hint">
+        <div class="card kbd-card">
+          <div class="kbd-title">⌨ マウス不要・キーボードだけで完結</div>
+          <ul class="kbd-list">
+            <li><span class="keys"><kbd>Enter</kbd></span> 次の入力欄へ進む</li>
+            <li><span class="keys"><kbd>Shift</kbd>+<kbd>Enter</kbd></span> 前の入力欄へ戻る</li>
+            <li><span class="keys"><kbd>Enter</kbd></span> 最終欄(備考)で押すと <b>明細行を追加</b></li>
+            <li><span class="keys"><kbd>Alt</kbd>+<kbd>D</kbd></span> 編集中の行を削除</li>
+            <li><span class="keys"><kbd>Ctrl</kbd>+<kbd>Enter</kbd></span> PDFを作成</li>
+            <li><span class="keys"><kbd>Esc</kbd></span> プレビューから修正へ戻る</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -262,7 +284,7 @@
   // ---- 明細 rows ----
   const rowsEl = $('#rows');
   let counter = 0;
-  function addRow(data={}){
+  function addRow(data={}, focusNew=false){
     counter++;
     const card = document.createElement('div');
     card.className='card';
@@ -285,9 +307,11 @@
     card.querySelector('.del').addEventListener('click',()=>{card.remove();renumber();});
     rowsEl.appendChild(card);
     renumber();
+    if(focusNew){const m=card.querySelector('.f-maker');focusInput(m);}
+    return card;
   }
   function renumber(){[...rowsEl.children].forEach((c,i)=>c.querySelector('.idx').textContent=i+1);}
-  $('#addRow').addEventListener('click',()=>addRow());
+  $('#addRow').addEventListener('click',()=>addRow({},true));
   // 初期1行
   addRow({maker:'パナソニック',model:'BQR34204',name:'住宅分電盤',qty:2,note:'リミッタースペースなし'});
 
@@ -361,6 +385,7 @@
     $('#form-view').classList.add('hidden');
     $('#preview-view').classList.remove('hidden');
     window.scrollTo(0,0);
+    $('#download').focus();   // プレビュー後すぐ Enter でダウンロードできる
   }
   function showForm(){
     $('#preview-view').classList.add('hidden');
@@ -371,6 +396,56 @@
   $('#back').addEventListener('click',showForm);
   $('#edit').addEventListener('click',showForm);
   $('#download').addEventListener('click',()=>window.print());
+
+  // ===== キーボード完結ナビゲーション（PC向け）=====
+  function focusInput(el){
+    if(!el)return;
+    el.focus();
+    try{ if(el.select && el.type!=='date') el.select(); }catch(_){}
+    el.scrollIntoView({block:'center',behavior:'smooth'});
+  }
+  function formInputs(){
+    return [...document.querySelectorAll('#form-view input')].filter(el=>el.offsetParent!==null);
+  }
+  $('#form-view').addEventListener('keydown',e=>{
+    const t=e.target;
+    if(t.tagName!=='INPUT') return;
+
+    // Ctrl/Cmd + Enter → PDF作成
+    if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); showPreview(); return; }
+
+    // Alt + D → 編集中の明細行を削除
+    if((e.key==='d'||e.key==='D') && e.altKey){
+      const card=t.closest('.card');
+      if(card){
+        e.preventDefault();
+        const next=card.nextElementSibling||card.previousElementSibling;
+        card.remove(); renumber();
+        focusInput(next ? next.querySelector('.f-maker') : formInputs()[0]);
+      }
+      return;
+    }
+
+    if(e.key!=='Enter') return;
+    e.preventDefault();
+    const inputs=formInputs();
+    const i=inputs.indexOf(t);
+
+    // Shift + Enter → 前の欄へ
+    if(e.shiftKey){ focusInput(inputs[i-1]); return; }
+
+    // 最終行の備考で Enter → 新規行を追加してそこへ
+    if(t.classList.contains('f-note') && t.closest('.card')===rowsEl.lastElementChild){
+      addRow({},true); return;
+    }
+    // それ以外は次の欄へ
+    focusInput(inputs[i+1]);
+  });
+
+  // プレビュー画面：Esc で修正へ戻る
+  $('#preview-view').addEventListener('keydown',e=>{
+    if(e.key==='Escape'){ e.preventDefault(); showForm(); }
+  });
 </script>
 </body>
 </html>
