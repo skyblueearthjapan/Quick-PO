@@ -1,0 +1,41 @@
+# 本番用（VPS /opt/hachuusho）— Cloudflare Tunnel 経由。ホストポートは開けない。
+name: hachuusho
+
+services:
+  api:
+    build: ./backend
+    image: hachuusho-api:latest
+    container_name: ho-api
+    restart: unless-stopped
+    expose: ["8000"]
+    networks: [ho-internal]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/api/health"]
+      interval: 30s
+      timeout: 4s
+      retries: 3
+      start_period: 15s
+
+  web:
+    build: ./web
+    image: hachuusho-web:latest
+    container_name: ho-web
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_healthy }
+    networks: [ho-internal]
+
+  cloudflared:
+    image: cloudflare/cloudflared:2025.2.1
+    container_name: ho-cloudflared
+    restart: unless-stopped
+    depends_on: [web]
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required}
+    networks: [ho-internal]
+
+networks:
+  ho-internal:
+    driver: bridge
+    name: hachuusho-internal

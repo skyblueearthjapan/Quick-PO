@@ -1,0 +1,18 @@
+# ローカル開発用（ホストポートでブラウザ確認）
+name: hachuusho-dev
+
+services:
+  api:
+    build: ./backend
+    container_name: ho-api
+    restart: unless-stopped
+    expose: ["8000"]
+
+  web:
+    build: ./web
+    container_name: ho-web
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:8090:80"

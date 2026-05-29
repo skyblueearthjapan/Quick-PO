@@ -1,9 +1,35 @@
 // screens-preview.jsx — プレビュー (A4 発注書・お客様フォーマット準拠) + PDF ダウンロード
 async function downloadSheetPDF(draft, flash) {
-  const el = document.getElementById('qp-sheet');
-  if (!el) return;
   const safeNo = (draft.no || 'sakurai').replace(/[^A-Za-z0-9\-]/g, '');
   const fname = `発注書_${safeNo}.pdf`;
+  // 1) サーバーのベクターPDF(/api/pdf・WeasyPrint)を最優先（文字＝テキスト/罫線＝ベクター）
+  try {
+    flash && flash('PDFを作成しています…');
+    const payload = {
+      no: draft.no, orderDate: draft.orderDate, dueDate: draft.dueDate,
+      vendorName: draft.vendor.name, vendorHonor: draft.vendor.honor || '御中',
+      deliv: draft.deliv || draft.vendor.deliv || '',
+      items: draft.items.filter(it => it.maker || it.model || it.name || it.qty),
+    };
+    const res = await fetch('/api/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fname;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      flash && flash('発注書PDFを保存しました');
+      return true;
+    }
+  } catch (e) { /* サーバー未接続 → クライアント生成にフォールバック */ }
+  return clientPdfFallback(draft, fname, flash);
+}
+
+// フォールバック: サーバーが使えないときだけ、画面を画像化してPDFにする
+async function clientPdfFallback(draft, fname, flash) {
+  const el = document.getElementById('qp-sheet');
+  if (!el) return false;
   if (window.html2canvas && window.jspdf) {
     try {
       flash && flash('PDFを作成しています…');
