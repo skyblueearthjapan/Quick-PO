@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1a3a52" />
+<title>発注書アプリ モックアップ｜株式会社桜井電装</title>
+<style>
+  :root{
+    --navy:#1a3a52;
+    --navy-d:#12293b;
+    --cream:#f4f2ec;
+    --line:#d9d4c7;
+    --ink:#23303a;
+    --muted:#7a8590;
+    --lock-bg:#eceae2;
+    --accent:#2f7d6b;
+    --danger:#c0584f;
+    --radius:12px;
+    --gap:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",system-ui,sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    -webkit-text-size-adjust:100%;
+    line-height:1.5;
+  }
+  /* ===== App chrome ===== */
+  .appbar{
+    position:sticky;top:0;z-index:20;
+    background:var(--navy);color:#fff;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;
+    padding-top:calc(env(safe-area-inset-top) + 14px);
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  .appbar .title{font-size:17px;font-weight:700;letter-spacing:.04em;}
+  .appbar .brand{font-size:12px;opacity:.85;}
+  .appbar .back{background:none;border:none;color:#fff;font-size:16px;cursor:pointer;padding:4px 8px;}
+
+  .wrap{max-width:680px;margin:0 auto;padding:16px 14px 120px;}
+  .grid2{display:block;}
+  @media(min-width:980px){
+    .wrap{max-width:1160px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+    .pc-sticky{position:sticky;top:84px;}
+  }
+
+  label.field{display:block;margin-bottom:14px;}
+  .field .lbl{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:5px;display:block;}
+  .field .lbl .req{color:var(--danger);font-size:11px;margin-left:4px;}
+  input[type=text],input[type=number],input[type=date]{
+    width:100%;font-size:16px;padding:12px;border:1.5px solid var(--line);
+    border-radius:10px;background:#fff;color:var(--ink);min-height:46px;
+  }
+  input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,58,82,.12);}
+  .locked{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--lock-bg);border:1.5px dashed var(--line);border-radius:10px;
+    padding:12px;font-size:15px;color:#4a555e;min-height:46px;
+  }
+  .locked .pad{font-size:12px;color:var(--muted);}
+  .auto{
+    background:#eef4f1;border:1.5px solid #cfe2da;border-radius:10px;
+    padding:12px;font-size:15px;color:#23413a;font-family:ui-monospace,monospace;
+    display:flex;align-items:center;justify-content:space-between;min-height:46px;
+  }
+  .auto .pad{font-size:11px;color:var(--accent);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  .sect{display:flex;align-items:center;gap:10px;margin:24px 0 14px;}
+  .sect::before,.sect::after{content:"";flex:1;height:1px;background:var(--line);}
+  .sect span{font-size:13px;font-weight:700;color:var(--navy);letter-spacing:.1em;}
+
+  /* ===== 明細 cards ===== */
+  .card{
+    background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);
+    padding:14px;margin-bottom:12px;position:relative;
+    box-shadow:0 1px 2px rgba(0,0,0,.03);
+  }
+  .card .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .card .no{font-size:12px;font-weight:700;color:#fff;background:var(--navy);
+    border-radius:20px;padding:3px 12px;}
+  .card .del{background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px 8px;}
+  .card .sub{font-size:12px;color:var(--muted);margin-bottom:4px;display:block;}
+  .card .sub:not(:first-child){margin-top:10px;}
+  .qtywrap{display:flex;align-items:center;gap:8px;}
+  .qtywrap input{max-width:120px;}
+  .qtywrap .unit{color:var(--muted);font-size:14px;}
+
+  .addbtn{
+    width:100%;border:2px dashed var(--navy);background:rgba(26,58,82,.04);
+    color:var(--navy);font-size:15px;font-weight:700;padding:14px;border-radius:12px;
+    cursor:pointer;margin-top:4px;
+  }
+  .addbtn:active{background:rgba(26,58,82,.1);}
+
+  /* ===== sticky footer ===== */
+  .footer{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    background:linear-gradient(to top,var(--cream) 70%,rgba(244,242,236,0));
+    padding:12px 14px;padding-bottom:calc(env(safe-area-inset-bottom) + 12px);
+  }
+  .footer .inner{max-width:680px;margin:0 auto;}
+  @media(min-width:980px){.footer{position:static;background:none;padding:0;margin-top:18px;}}
+  .primary{
+    width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;
+    font-size:17px;font-weight:700;padding:16px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(26,58,82,.3);
+  }
+  .primary:active{background:var(--navy-d);}
+  .ghost{
+    background:#fff;color:var(--navy);border:1.5px solid var(--navy);border-radius:12px;
+    font-size:16px;font-weight:700;padding:14px;cursor:pointer;
+  }
+
+  .hidden{display:none !important;}
+
+  /* ===== Preview (A4 sheet) ===== */
+  .preview-actions{display:flex;gap:10px;max-width:680px;margin:0 auto 16px;}
+  .preview-actions>*{flex:1;}
+  .sheetwrap{display:flex;justify-content:center;}
+  .sheet{
+    background:#fff;color:#000;width:100%;max-width:720px;
+    border:1px solid #ccc;box-shadow:0 6px 24px rgba(0,0,0,.15);
+    padding:34px 38px;font-size:13px;
+  }
+  .sheet h1{text-align:center;font-size:24px;letter-spacing:.5em;margin:0 0 6px;font-weight:700;
+    border:2px solid #000;display:inline-block;padding:4px 26px;}
+  .sheet .h1wrap{text-align:center;margin-bottom:14px;}
+  .sheet .top{display:flex;justify-content:space-between;gap:20px;margin-bottom:14px;}
+  .sheet .meta div{margin-bottom:3px;}
+  .sheet .meta .k{display:inline-block;min-width:78px;color:#333;}
+  .sheet .seller{text-align:right;font-size:12px;line-height:1.7;}
+  .sheet .seller .nm{font-size:15px;font-weight:700;}
+  .sheet .to{font-size:16px;font-weight:700;border-bottom:1.5px solid #000;
+    display:inline-block;padding-bottom:2px;margin-bottom:4px;}
+  .sheet .note{margin:6px 0 14px;}
+  .sheet .deliv{display:flex;border:1px solid #000;margin-bottom:14px;}
+  .sheet .deliv .cell{flex:1;display:flex;}
+  .sheet .deliv .ck{background:#f0f0f0;padding:8px 10px;font-weight:700;border-right:1px solid #000;white-space:nowrap;}
+  .sheet .deliv .cv{padding:8px 10px;flex:1;}
+  .sheet .deliv .cell:first-child{border-right:1px solid #000;}
+  table.items{width:100%;border-collapse:collapse;}
+  table.items th,table.items td{border:1px solid #000;padding:7px 8px;font-size:12px;vertical-align:top;}
+  table.items th{background:var(--navy);color:#fff;text-align:center;font-weight:700;}
+  table.items td.c{text-align:center;}
+  table.items .tm{font-weight:600;}
+  table.items .nm{color:#333;font-size:11px;}
+  table.items td.empty{height:30px;}
+
+  /* ===== print ===== */
+  @media print{
+    .appbar,.footer,.preview-actions,#form-view{display:none !important;}
+    body{background:#fff;}
+    .wrap{padding:0;max-width:none;}
+    .sheet{box-shadow:none;border:none;max-width:none;padding:0;}
+    @page{size:A4;margin:14mm;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== FORM VIEW ===================== -->
+<div id="form-view">
+  <header class="appbar">
+    <div>
+      <div class="title">発注書 作成</div>
+    </div>
+    <div class="brand">株式会社 桜井電装</div>
+  </header>
+
+  <div class="wrap">
+    <div class="grid2">
+      <!-- 左：入力 -->
+      <div>
+        <div class="row2">
+          <label class="field">
+            <span class="lbl">発注年月日</span>
+            <input type="date" id="orderDate" />
+          </label>
+          <label class="field">
+            <span class="lbl">納品期限</span>
+            <input type="date" id="dueDate" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="lbl">発注書No.（自動採番）</span>
+          <div class="auto"><span id="orderNo">NK-AAA-260529-01</span><span class="pad">自動</span></div>
+        </label>
+
+        <label class="field">
+          <span class="lbl">発注先</span>
+          <div class="locked"><span>中西電機株式会社　御中</span><span class="pad">固定 🔒</span></div>
+        </label>
+
+        <label class="field">
+          <span class="lbl">納品場所</span>
+          <div class="locked"><span>弊社（東京）</span><span class="pad">固定 🔒</span></div>
+        </label>
+
+        <div class="sect"><span>明　細</span></div>
+        <div id="rows"></div>
+        <button class="addbtn" id="addRow">＋　行を追加</button>
+      </div>
+
+      <!-- 右：PCのみライブ案内 -->
+      <div class="pc-sticky" id="pc-hint" style="display:none">
+        <div class="card" style="text-align:center;color:var(--muted)">
+          PC表示では、ここに発注書プレビューを<br>リアルタイム表示する想定です。<br>
+          （モックでは「PDFを作成する」で確認できます）
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="inner">
+      <button class="primary" id="makePdf">📄　PDFを作成する</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PREVIEW VIEW ===================== -->
+<div id="preview-view" class="hidden">
+  <header class="appbar">
+    <button class="back" id="back">← 修正にもどる</button>
+    <div class="title">プレビュー</div>
+    <div class="brand"></div>
+  </header>
+
+  <div class="wrap">
+    <div class="preview-actions">
+      <button class="primary" id="download">⬇ ダウンロード / 印刷</button>
+      <button class="ghost" id="edit">✏ 修正</button>
+    </div>
+    <div class="sheetwrap">
+      <div class="sheet" id="sheet"><!-- generated --></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- helpers ----
+  const $ = (s)=>document.querySelector(s);
+  const pad = (n)=>String(n).padStart(2,'0');
+  function todayISO(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function addDaysISO(n){const d=new Date();d.setDate(d.getDate()+n);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function jpDate(iso){if(!iso)return '';const[y,m,d]=iso.split('-');return `${y}年 ${parseInt(m)}月 ${parseInt(d)}日`;}
+  function genNo(iso){const[y,m,d]=iso.split('-');return `NK-AAA-${y.slice(2)}${m}${d}-01`;}
+
+  // ---- init dates / no ----
+  $('#orderDate').value = todayISO();
+  $('#dueDate').value = addDaysISO(12);
+  $('#orderNo').textContent = genNo(todayISO());
+  $('#orderDate').addEventListener('change',e=>{$('#orderNo').textContent=genNo(e.target.value||todayISO());});
+
+  // ---- 明細 rows ----
+  const rowsEl = $('#rows');
+  let counter = 0;
+  function addRow(data={}){
+    counter++;
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML = `
+      <div class="head">
+        <span class="no">No.<span class="idx"></span></span>
+        <button class="del" title="削除">🗑</button>
+      </div>
+      <span class="sub">メーカー</span>
+      <input type="text" class="f-maker" placeholder="例）パナソニック" value="${data.maker||''}">
+      <span class="sub">型式</span>
+      <input type="text" class="f-model" placeholder="例）BQR34204" value="${data.model||''}">
+      <span class="sub">名称</span>
+      <input type="text" class="f-name" placeholder="例）分電盤" value="${data.name||''}">
+      <span class="sub">数量</span>
+      <div class="qtywrap"><input type="number" class="f-qty" min="0" step="1" value="${data.qty||''}" placeholder="0"><span class="unit">個</span></div>
+      <span class="sub">備考</span>
+      <input type="text" class="f-note" placeholder="（任意）" value="${data.note||''}">
+    `;
+    card.querySelector('.del').addEventListener('click',()=>{card.remove();renumber();});
+    rowsEl.appendChild(card);
+    renumber();
+  }
+  function renumber(){[...rowsEl.children].forEach((c,i)=>c.querySelector('.idx').textContent=i+1);}
+  $('#addRow').addEventListener('click',()=>addRow());
+  // 初期1行
+  addRow({maker:'パナソニック',model:'BQR34204',name:'住宅分電盤',qty:2,note:'リミッタースペースなし'});
+
+  // ---- collect ----
+  function collect(){
+    const items=[...rowsEl.children].map(c=>({
+      maker:c.querySelector('.f-maker').value.trim(),
+      model:c.querySelector('.f-model').value.trim(),
+      name:c.querySelector('.f-name').value.trim(),
+      qty:c.querySelector('.f-qty').value.trim(),
+      note:c.querySelector('.f-note').value.trim(),
+    }));
+    return {
+      orderDate:$('#orderDate').value, dueDate:$('#dueDate').value,
+      orderNo:$('#orderNo').textContent, items
+    };
+  }
+
+  // ---- build preview sheet ----
+  function buildSheet(d){
+    const MIN_ROWS=8;
+    let body='';
+    d.items.forEach(it=>{
+      body+=`<tr>
+        <td>${esc(it.maker)}</td>
+        <td><div class="tm">${esc(it.model)}</div><div class="nm">${esc(it.name)}</div></td>
+        <td class="c">${esc(it.qty)}</td>
+        <td>${esc(it.note)}</td></tr>`;
+    });
+    for(let i=d.items.length;i<MIN_ROWS;i++){
+      body+=`<tr><td class="empty"></td><td></td><td></td><td></td></tr>`;
+    }
+    return `
+      <div class="h1wrap"><h1>発注書</h1></div>
+      <div class="top">
+        <div class="meta">
+          <div class="to">中西電機株式会社　御中</div>
+          <div class="note">下記の通り、発注致します。</div>
+        </div>
+        <div class="meta">
+          <div><span class="k">発注年月日</span>${jpDate(d.orderDate)}</div>
+          <div><span class="k">発注書No.</span>${esc(d.orderNo)}</div>
+        </div>
+      </div>
+      <div class="seller">
+        <div class="nm">株式会社　桜井電装</div>
+        <div>〒125-0032　東京都葛飾区水元1-14-4</div>
+        <div>TEL：03-3600-2012　FAX：03-3600-2743</div>
+        <div>担当：櫻井(光)</div>
+      </div>
+      <div style="height:8px"></div>
+      <div class="deliv">
+        <div class="cell"><div class="ck">納品期限</div><div class="cv">${jpDate(d.dueDate)}</div></div>
+        <div class="cell"><div class="ck">納品場所</div><div class="cv">弊社（東京）</div></div>
+      </div>
+      <table class="items">
+        <thead><tr>
+          <th style="width:22%">ﾒｰｶｰ / ｻｲｽﾞ</th>
+          <th style="width:40%">型式 / 名称</th>
+          <th style="width:13%">数量</th>
+          <th style="width:25%">備考</th>
+        </tr></thead>
+        <tbody>${body}</tbody>
+      </table>`;
+  }
+  function esc(s){return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+
+  // ---- view switch ----
+  function showPreview(){
+    $('#sheet').innerHTML=buildSheet(collect());
+    $('#form-view').classList.add('hidden');
+    $('#preview-view').classList.remove('hidden');
+    window.scrollTo(0,0);
+  }
+  function showForm(){
+    $('#preview-view').classList.add('hidden');
+    $('#form-view').classList.remove('hidden');
+    window.scrollTo(0,0);
+  }
+  $('#makePdf').addEventListener('click',showPreview);
+  $('#back').addEventListener('click',showForm);
+  $('#edit').addEventListener('click',showForm);
+  $('#download').addEventListener('click',()=>window.print());
+</script>
+</body>
+</html>

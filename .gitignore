@@ -1,0 +1,23 @@
+# --- データ・ビルド成果物 ---
+data/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.venv/
+
+# --- 環境・秘密情報 ---
+.env
+.env.*
+!.env.example
+.cloudflare-config.local
+*.cf-token
+
+# --- ツール・OS ---
+.omc/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- Office 一時ロックファイル ---
+~$*
