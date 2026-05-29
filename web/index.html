@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>発注書アプリ｜株式会社 桜井電装</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1d3a52" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="発注書" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png" />
+
+<!-- fonts (A案・藍) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Serif+JP:wght@500;700&family=Shippori+Mincho:wght@600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #e7e3d9; overscroll-behavior: none; }
+  * { -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+  #root { height: 100dvh; width: 100%; }
+
+  /* desktop: center a phone-width column so the field tool reads well on PC too */
+  @media (min-width: 560px) {
+    body { display: flex; align-items: center; justify-content: center; }
+    #root {
+      width: 430px; height: min(920px, 96dvh);
+      border-radius: 30px; overflow: hidden;
+      box-shadow: 0 24px 70px rgba(28, 42, 56, .28);
+    }
+  }
+
+  @keyframes qpWave { 0%,100% { transform: scaleY(.28); } 50% { transform: scaleY(1); } }
+  @keyframes qpBlink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+  @keyframes qpSpin { to { transform: rotate(360deg); } }
+  @keyframes qpPulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,90,80,.45); }
+    70% { box-shadow: 0 0 0 18px rgba(255,90,80,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,90,80,0); }
+  }
+  @media print {
+    body * { visibility: hidden; }
+    #qp-sheet, #qp-sheet * { visibility: visible; }
+    #qp-sheet { position: fixed; inset: 0; margin: 0; box-shadow: none !important; border-radius: 0 !important; }
+    @page { size: A4; margin: 14mm; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- libraries (verified working from unpkg) -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<!-- app (A案・藍) -->
+<script type="text/babel" src="app/core.jsx"></script>
+<script type="text/babel" src="app/themes.jsx"></script>
+<script type="text/babel" src="app/ui.jsx"></script>
+<script type="text/babel" src="app/screens-create.jsx"></script>
+<script type="text/babel" src="app/screens-home.jsx"></script>
+<script type="text/babel" src="app/screens-preview.jsx"></script>
+<script type="text/babel" src="app/PhoneApp.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+  ReactDOM.createRoot(document.getElementById('root')).render(<PhoneApp themeKey="ai" />);
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>

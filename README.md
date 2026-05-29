@@ -10,7 +10,26 @@
 | `01-VPS接続手順.md` | Hostinger VPS への SSH 接続と同居サービスの取り扱い |
 | `02-新規アプリ立ち上げ手順.md` | プロジェクト作成 → Cloudflare 設定 → デプロイまでの一気通貫手順 |
 | `03-PWA化チェックリスト.md` | manifest / service worker / アイコン等の PWA 必須要素 |
+| `web/` | **本アプリ（A案・藍）** — フルスクリーンのレスポンシブPWA実装 |
+| `mockup/` | 初期の単一HTMLモックアップ（参照用・履歴） |
 | `フォーマットデータ/` | 発注書のテンプレート Excel など |
+
+## web/（本アプリ）の起動・構成
+
+A案（藍テーマ）の実装。ローカル確認は `web/` 直下で静的配信して開く（`file://` だと Babel が外部JSXを読めないため）:
+
+```powershell
+cd web ; python -m http.server 8765 --bind 127.0.0.1   # → http://127.0.0.1:8765/
+```
+
+- `index.html` … エントリ（React/Babel/jsPDF/html2canvas を CDN 読込 → `app/*.jsx` を描画）
+- `app/core.jsx` … データ・日付/採番ヘルパー・`aiParse`（**`/api/parse`=Gemini Flash → 失敗時ローカル解析**にフォールバック）
+- `app/themes.jsx` `app/ui.jsx` … 藍テーマトークン・共通UI（ロゴ＋社名ロックアップ）
+- `app/screens-*.jsx` … ホーム/履歴・作成(音声入力)・プレビュー(PDFダウンロード)・発注先マスタ
+- `app/PhoneApp.jsx` … 画面遷移・タブ・localStorage 永続化
+- 音声は端末標準の Web Speech API（無料）。履歴は localStorage に保存。
+
+> 次段階: `/api/parse`(FastAPI+Gemini Flash) 実装、Vite でのJSXプリコンパイル、`/opt/hachuusho/` への Cloudflare デプロイ。
 
 ---
 
