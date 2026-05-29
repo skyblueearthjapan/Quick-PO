@@ -307,7 +307,7 @@ function Spinner({ big, color = '#fff' }) {
 }
 
 // ───────────────────────── create screen ─────────────────────────
-function CreateScreen({ t, draft, setDraft, onPreview, onHome, flash }) {
+function CreateScreen({ t, draft, setDraft, vendors = [], delivs = [], onPreview, onHome, flash }) {
   const set = (k, v) => setDraft(d => ({ ...d, [k]: v }));
   const setItem = (i, it) => setDraft(d => ({ ...d, items: d.items.map((x, j) => j === i ? it : x) }));
   const delItem = (i) => setDraft(d => ({ ...d, items: d.items.filter((_, j) => j !== i) }));
@@ -330,13 +330,21 @@ function CreateScreen({ t, draft, setDraft, onPreview, onHome, flash }) {
           <ReadRow t={t} kind="auto" badge={<>自動採番</>}>{draft.no}</ReadRow>
         </Field>
 
-        <Field t={t} label="発注先">
-          <button onClick={onHome && null} style={{ all: 'unset', display: 'block', width: '100%' }}>
-            <ReadRow t={t} badge={<><Icon name="lock" size={13} color={t.faint} />固定</>}>{draft.vendor.name}　{draft.vendor.honor}</ReadRow>
-          </button>
+        <Field t={t} label="発注先" hint="マスタに登録された発注先から選べます">
+          <SelectInput t={t} value={draft.vendor.id}
+            onChange={e => {
+              const v = vendors.find(x => x.id === e.target.value) || draft.vendor;
+              setDraft(d => ({ ...d, vendor: v, deliv: v.deliv || d.deliv }));
+            }}>
+            {vendors.map(v => <option key={v.id} value={v.id}>{v.name}　{v.honor}</option>)}
+            {vendors.every(v => v.id !== draft.vendor.id) ? <option value={draft.vendor.id}>{draft.vendor.name}　{draft.vendor.honor}</option> : null}
+          </SelectInput>
         </Field>
         <Field t={t} label="納品場所">
-          <ReadRow t={t} badge={<><Icon name="lock" size={13} color={t.faint} />固定</>}>{draft.vendor.deliv}</ReadRow>
+          <SelectInput t={t} value={draft.deliv} onChange={e => set('deliv', e.target.value)}>
+            {delivs.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+            {draft.deliv && delivs.every(d => d.name !== draft.deliv) ? <option value={draft.deliv}>{draft.deliv}</option> : null}
+          </SelectInput>
         </Field>
 
         <SectionRule t={t}>明　細</SectionRule>

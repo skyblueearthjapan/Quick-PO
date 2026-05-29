@@ -155,6 +155,21 @@ function TextInput({ t, mono, onFocus, onBlur, style, ...rest }) {
   );
 }
 
+// themed select (pulldown)
+function SelectInput({ t, value, onChange, children, mono, style }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <select value={value} onChange={onChange} style={{
+        ...inputStyle(t, mono), appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none',
+        paddingRight: 40, cursor: 'pointer', ...style,
+      }}>{children}</select>
+      <span style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex' }}>
+        <Icon name="chevR" size={16} color={t.faint} style={{ transform: 'rotate(90deg)' }} />
+      </span>
+    </div>
+  );
+}
+
 // locked / auto display rows (read-only)
 function ReadRow({ t, children, badge, kind = 'lock' }) {
   const isAuto = kind === 'auto';
@@ -261,6 +276,6 @@ function hexA(hex, a) {
 }
 
 Object.assign(window, {
-  Icon, AppHeader, Btn, Field, TextInput, ReadRow, SectionRule, StatusPill, Toast, Sheet, Waveform,
+  Icon, AppHeader, Btn, Field, TextInput, SelectInput, ReadRow, SectionRule, StatusPill, Toast, Sheet, Waveform,
   inputStyle, hexA, BrandLockup, BRAND_NAVY,
 });

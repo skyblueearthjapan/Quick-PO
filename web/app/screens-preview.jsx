@@ -88,7 +88,7 @@ function PreviewScreen({ t, draft, onBack, onSend, flash }) {
             </div>
             <div style={{ display: 'flex', flex: 1 }}>
               <div style={{ background: '#f0f0f0', padding: '7px 9px', fontWeight: 700, borderRight: '1px solid #111', whiteSpace: 'nowrap' }}>納品場所</div>
-              <div style={{ padding: '7px 9px', flex: 1 }}>{draft.vendor.deliv}</div>
+              <div style={{ padding: '7px 9px', flex: 1 }}>{draft.deliv || draft.vendor.deliv}</div>
             </div>
           </div>
 

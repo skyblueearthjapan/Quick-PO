@@ -53,6 +53,13 @@ const SEED_VENDORS = [
     tags: ['工具', '消耗品'], pinned: false, last: '2026-03-09' },
 ];
 
+// ───────────────────────── 納品場所マスタ (delivery locations) ─────────────────────────
+const SEED_DELIVS = [
+  { id: 'dl1', name: '弊社（東京）' },
+  { id: 'dl2', name: '現場直送' },
+  { id: 'dl3', name: '倉庫（埼玉）' },
+];
+
 // ───────────────────────── 発注履歴 (order history) ─────────────────────────
 const SEED_HISTORY = [
   { id: 'o1', no: 'NK-AAA-260520-01', vendor: '中西電機株式会社', date: '2026-05-20',
@@ -158,6 +165,6 @@ const SAMPLE_UTTERANCE = 'パナソニックの分電盤BQR34204を2面、テン
 
 Object.assign(window, {
   pad2, todayISO, addDaysISO, jpDate, jpDateShort, genNo,
-  SELF, SEED_VENDORS, SEED_HISTORY, STATUS_LABEL, UNITS,
+  SELF, SEED_VENDORS, SEED_DELIVS, SEED_HISTORY, STATUS_LABEL, UNITS,
   localParse, aiParse, SAMPLE_UTTERANCE,
 });
