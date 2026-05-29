@@ -74,7 +74,14 @@
 
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+      // 新しい版が有効化されたら自動で1回だけリロードして最新を反映
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloaded) return; reloaded = true; window.location.reload();
+      });
+    });
   }
 </script>
 </body>
