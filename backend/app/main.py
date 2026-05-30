@@ -7,6 +7,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel
 
 from .pdf import render_order_pdf
+from .parse import parse_items
 
 app = FastAPI(title="発注書アプリ API")
 app.add_middleware(
@@ -34,9 +35,19 @@ class Order(BaseModel):
     items: list[Item] = []
 
 
+class ParseReq(BaseModel):
+    text: str = ""
+
+
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
+
+@app.post("/api/parse")
+def parse(req: ParseReq):
+    # 音声テキスト → 明細配列。Gemini(キーあれば) → 失敗時ローカル解析
+    return {"items": parse_items(req.text)}
 
 
 @app.post("/api/pdf")
