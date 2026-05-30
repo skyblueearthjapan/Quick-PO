@@ -178,6 +178,15 @@ function MasterScreen({ t, vendors, setVendors, delivs, setDelivs, defaultId, se
     flash('納品場所を削除しました');
   }
 
+  // 編集は全画面（保存はヘッダー右上＝キーボードに隠れない）。vForm/dForm を最優先で表示。
+  if (vForm) {
+    return <VendorEditScreen t={t} draft={vForm} delivs={delivs}
+      onCancel={() => setVForm(null)} onSave={saveVendor} />;
+  }
+  if (dForm) {
+    return <DelivEditScreen t={t} draft={dForm}
+      onCancel={() => setDForm(null)} onSave={saveDeliv} />;
+  }
   if (detail) {
     return <VendorDetail t={t} v={detail} isDefault={detail.id === defaultId}
       onBack={() => setDetail(null)} onUse={() => onUse(detail)}
@@ -242,25 +251,33 @@ function MasterScreen({ t, vendors, setVendors, delivs, setDelivs, defaultId, se
           </>
         )}
       </div>
-
-      <VendorForm t={t} draft={vForm} open={!!vForm} delivs={delivs} onClose={() => setVForm(null)} onSave={saveVendor} />
-      <DelivForm t={t} draft={dForm} open={!!dForm} onClose={() => setDForm(null)} onSave={saveDeliv} />
     </div>
   );
 }
 
-function VendorForm({ t, draft, open, delivs, onClose, onSave }) {
-  const [f, setF] = useStateH({});
-  React.useEffect(() => { if (draft) setF({ ...draft }); }, [draft]);
+// ヘッダー右上の「保存」ボタン（キーボードに隠れない）
+function SaveHeaderBtn({ t, canSave, onSave }) {
+  return (
+    <button onClick={() => canSave && onSave()} disabled={!canSave} style={{
+      border: 'none', background: 'transparent', cursor: canSave ? 'pointer' : 'default',
+      color: canSave ? t.primary : t.faint, fontFamily: t.fontHead, fontWeight: 700, fontSize: 16, padding: 4,
+    }}>保存</button>
+  );
+}
+
+// 発注先の編集（全画面）
+function VendorEditScreen({ t, draft, delivs, onCancel, onSave }) {
+  const [f, setF] = useStateH(() => ({ ...draft }));
+  React.useEffect(() => { setF({ ...draft }); }, [draft]);
   const set = (k, val) => setF(p => ({ ...p, [k]: val }));
   const canSave = (f.name || '').trim().length > 0;
+  const save = () => { if (canSave) onSave(f); };
   return (
-    <Sheet t={t} open={open} onClose={onClose}>
-      <div style={{ padding: `8px ${t.pad}px calc(env(safe-area-inset-bottom) + ${t.pad}px)`, overflowY: 'auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '4px 0 14px' }}>
-          <span style={{ fontFamily: t.fontHead, fontWeight: 700, fontSize: 17, color: t.ink }}>{f._new ? '発注先を追加' : '発注先を編集'}</span>
-          <button onClick={onClose} style={{ border: 'none', background: t.surfaceAlt, borderRadius: 999, width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={17} color={t.sub} /></button>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <AppHeader t={t} title={f._new ? '発注先を追加' : '発注先を編集'}
+        left={<>キャンセル</>} onLeft={onCancel}
+        right={<SaveHeaderBtn t={t} canSave={canSave} onSave={save} />} />
+      <div style={{ flex: 1, overflowY: 'auto', padding: `${t.pad}px ${t.pad}px calc(env(safe-area-inset-bottom) + 28px)` }}>
         <Field t={t} label="会社名" req><TextInput t={t} value={f.name || ''} placeholder="例）中西電機株式会社" onChange={e => set('name', e.target.value)} /></Field>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: t.gap }}>
           <Field t={t} label="フリガナ"><TextInput t={t} value={f.kana || ''} placeholder="なかにしでんき" onChange={e => set('kana', e.target.value)} /></Field>
@@ -278,33 +295,35 @@ function VendorForm({ t, draft, open, delivs, onClose, onSave }) {
         <Field t={t} label="タグ" hint="「、」区切りで複数（例：分電盤、ブレーカー）">
           <TextInput t={t} value={tagsToStr(f.tags)} placeholder="分電盤、ブレーカー" onChange={e => set('tags', strToTags(e.target.value))} />
         </Field>
-        <Btn t={t} kind="primary" full size="lg" style={{ marginTop: 6 }} disabled={!canSave} onClick={() => canSave && onSave(f)}>
+        <Btn t={t} kind="primary" full size="lg" style={{ marginTop: 6 }} disabled={!canSave} onClick={save}>
           <Icon name="check" size={20} color={t.onPrimary} sw={2.4} />保存する
         </Btn>
       </div>
-    </Sheet>
+    </div>
   );
 }
 
-function DelivForm({ t, draft, open, onClose, onSave }) {
-  const [name, setName] = useStateH('');
-  React.useEffect(() => { if (draft) setName(draft.name || ''); }, [draft]);
+// 納品場所の編集（全画面）
+function DelivEditScreen({ t, draft, onCancel, onSave }) {
+  const [name, setName] = useStateH(() => (draft && draft.name) || '');
+  React.useEffect(() => { setName((draft && draft.name) || ''); }, [draft]);
   const editing = !!(draft && draft.id);
+  const canSave = !!name.trim();
+  const save = () => { if (canSave) onSave({ id: draft ? draft.id : '', name }); };
   return (
-    <Sheet t={t} open={open} onClose={onClose}>
-      <div style={{ padding: `8px ${t.pad}px calc(env(safe-area-inset-bottom) + ${t.pad}px)` }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '4px 0 14px' }}>
-          <span style={{ fontFamily: t.fontHead, fontWeight: 700, fontSize: 17, color: t.ink }}>{editing ? '納品場所を編集' : '納品場所を追加'}</span>
-          <button onClick={onClose} style={{ border: 'none', background: t.surfaceAlt, borderRadius: 999, width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={17} color={t.sub} /></button>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <AppHeader t={t} title={editing ? '納品場所を編集' : '納品場所を追加'}
+        left={<>キャンセル</>} onLeft={onCancel}
+        right={<SaveHeaderBtn t={t} canSave={canSave} onSave={save} />} />
+      <div style={{ flex: 1, overflowY: 'auto', padding: `${t.pad}px ${t.pad}px calc(env(safe-area-inset-bottom) + 28px)` }}>
         <Field t={t} label="納品場所名" req>
           <TextInput t={t} value={name} placeholder="例）弊社（東京）／現場直送" onChange={e => setName(e.target.value)} />
         </Field>
-        <Btn t={t} kind="primary" full size="lg" style={{ marginTop: 6 }} disabled={!name.trim()} onClick={() => name.trim() && onSave({ id: draft ? draft.id : '', name })}>
+        <Btn t={t} kind="primary" full size="lg" style={{ marginTop: 6 }} disabled={!canSave} onClick={save}>
           <Icon name="check" size={20} color={t.onPrimary} sw={2.4} />保存する
         </Btn>
       </div>
-    </Sheet>
+    </div>
   );
 }
 
@@ -357,4 +376,4 @@ function VendorDetail({ t, v, isDefault, onBack, onUse, onSetDefault, onEdit, on
   );
 }
 
-Object.assign(window, { HomeScreen, MasterScreen, VendorDetail, VendorForm, DelivForm, Segmented, AddTile, OrderRow });
+Object.assign(window, { HomeScreen, MasterScreen, VendorDetail, VendorEditScreen, DelivEditScreen, SaveHeaderBtn, Segmented, AddTile, OrderRow });
