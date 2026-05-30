@@ -116,6 +116,8 @@ def _gemini(text: str, key: str, model: str):
             "responseMimeType": "application/json",
             "responseSchema": _SCHEMA,
             "temperature": 0,
+            # 抽出用途では思考不要 → 無効化してコスト・速度を改善(2.5系)
+            "thinkingConfig": {"thinkingBudget": 0},
         },
     }
     r = httpx.post(url, json=body, timeout=30.0)
