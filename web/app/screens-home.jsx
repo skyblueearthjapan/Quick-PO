@@ -2,39 +2,48 @@
 const { useState: useStateH } = React;
 
 // ───────────────────────── history row ─────────────────────────
-function OrderRow({ t, o, onOpen }) {
-  const head = o.items[0];
+function OrderRow({ t, o, onOpen, onDelete }) {
+  const head = o.items[0] || {};
   return (
-    <button onClick={() => onOpen(o)} style={{
-      all: 'unset', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
-      width: '100%', boxSizing: 'border-box', padding: `${t.pad - 4}px ${t.pad - 2}px`,
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 4,
       background: t.surface, border: `1.5px solid ${t.line}`, borderRadius: t.radius,
-      marginBottom: t.gap, boxShadow: t.card,
+      marginBottom: t.gap, boxShadow: t.card, overflow: 'hidden',
     }}>
-      <span style={{
-        width: 44, height: 44, borderRadius: t.radiusSm, flexShrink: 0,
-        background: o.status === 'draft' ? hexA(t.faint, .14) : hexA(t.primary, .1),
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}><Icon name={o.status === 'draft' ? 'edit' : 'doc'} size={22} color={o.status === 'draft' ? t.sub : t.primary} /></span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontFamily: t.fontHead, fontWeight: 700, color: t.ink, fontSize: 15.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.vendor}</span>
-          <StatusPill t={t} status={o.status} />
+      <button onClick={() => onOpen(o)} style={{
+        all: 'unset', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
+        flex: 1, minWidth: 0, boxSizing: 'border-box', padding: `${t.pad - 4}px ${t.pad - 2}px`,
+      }}>
+        <span style={{
+          width: 44, height: 44, borderRadius: t.radiusSm, flexShrink: 0,
+          background: o.status === 'draft' ? hexA(t.faint, .14) : hexA(t.primary, .1),
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}><Icon name={o.status === 'draft' ? 'edit' : 'doc'} size={22} color={o.status === 'draft' ? t.sub : t.primary} /></span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontFamily: t.fontHead, fontWeight: 700, color: t.ink, fontSize: 15.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.vendor}</span>
+            <StatusPill t={t} status={o.status} />
+          </span>
+          <span style={{ display: 'block', fontSize: 12.5, color: t.sub, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {head.name || head.model || '（明細なし）'}{o.lines > 1 ? ` 他${o.lines - 1}件` : ''} ・ {o.qty}点
+          </span>
+          <span style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 11.5, color: t.faint, fontFamily: t.mono }}>
+            <span>{o.no}</span><span>{jpDateShort(o.date)}発注</span>
+          </span>
         </span>
-        <span style={{ display: 'block', fontSize: 12.5, color: t.sub, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {head.name || head.model}{o.lines > 1 ? ` 他${o.lines - 1}件` : ''} ・ {o.qty}点
-        </span>
-        <span style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 11.5, color: t.faint, fontFamily: t.mono }}>
-          <span>{o.no}</span><span>{jpDateShort(o.date)}発注</span>
-        </span>
-      </span>
-      <Icon name="chevR" size={18} color={t.faint} />
-    </button>
+      </button>
+      {onDelete ? (
+        <button onClick={() => { if (window.confirm(`「${o.vendor}」(${o.no})の履歴を削除しますか？`)) onDelete(o); }}
+          aria-label="削除" style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: t.danger, padding: 10, flexShrink: 0, display: 'flex', alignSelf: 'stretch', alignItems: 'center' }}>
+          <Icon name="trash" size={18} color={t.danger} />
+        </button>
+      ) : null}
+    </div>
   );
 }
 
 // ───────────────────────── home ─────────────────────────
-function HomeScreen({ t, history, vendorCount = 0, onNew, onOpen }) {
+function HomeScreen({ t, history, vendorCount = 0, onNew, onOpen, onDelete }) {
   const drafts = history.filter(o => o.status === 'draft');
   const done = history.filter(o => o.status !== 'draft');
   const thisMonth = history.filter(o => o.status !== 'draft' && o.date >= todayISO().slice(0, 7)).length
@@ -90,12 +99,12 @@ function HomeScreen({ t, history, vendorCount = 0, onNew, onOpen }) {
         {drafts.length ? (
           <>
             <SectionLabel t={t}>下書き</SectionLabel>
-            {drafts.map(o => <OrderRow key={o.id} t={t} o={o} onOpen={onOpen} />)}
+            {drafts.map(o => <OrderRow key={o.id} t={t} o={o} onOpen={onOpen} onDelete={onDelete} />)}
           </>
         ) : null}
 
         <SectionLabel t={t}>最近の発注</SectionLabel>
-        {done.map(o => <OrderRow key={o.id} t={t} o={o} onOpen={onOpen} />)}
+        {done.map(o => <OrderRow key={o.id} t={t} o={o} onOpen={onOpen} onDelete={onDelete} />)}
       </div>
     </div>
   );

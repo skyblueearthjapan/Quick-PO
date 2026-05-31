@@ -20,7 +20,7 @@ function freshDraft(vendor, delivName) {
     orderDate: d, dueDate: addDaysISO(12), no: genNo(d),
     vendor,
     deliv: delivName || vendor.deliv || '',
-    items: [{ maker: 'パナソニック', model: 'BQR34204', name: '住宅分電盤', qty: '2', unit: '面', note: 'リミッタースペースなし' }],
+    items: [{ maker: '', model: '', name: '', qty: '', unit: '個', note: '' }],
   };
 }
 
@@ -46,6 +46,10 @@ function PhoneApp({ themeKey }) {
     setDraft(freshDraft(v, v.deliv));
     setRoute('create');
   }
+  function removeOrder(o) {
+    setHistory(h => h.filter(x => x.id !== o.id));
+    flash('発注履歴を削除しました');
+  }
   function openOrder(o) {
     const v = vendors.find(x => x.name === o.vendor) || defVendor;
     setDraft({ orderDate: o.date, dueDate: o.due, no: o.no === '（下書き）' ? genNo(o.date) : o.no, vendor: v, deliv: o.deliv || v.deliv || '', items: o.items.map(x => ({ unit: '個', note: '', ...x })) });
@@ -66,7 +70,7 @@ function PhoneApp({ themeKey }) {
     <div style={{ position: 'relative', height: '100%', background: t.bg, color: t.ink, fontFamily: t.fontBody, overflow: 'hidden' }}>
       {t.bgGrain ? <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: .5, backgroundImage: 'radial-gradient(rgba(120,110,80,.05) 1px, transparent 1px)', backgroundSize: '4px 4px', zIndex: 0 }} /> : null}
       <div style={{ position: 'relative', zIndex: 1, height: '100%' }}>
-        {route === 'home' ? <HomeScreen t={t} history={history} vendorCount={vendors.length} onNew={() => newOrder()} onOpen={openOrder} /> : null}
+        {route === 'home' ? <HomeScreen t={t} history={history} vendorCount={vendors.length} onNew={() => newOrder()} onOpen={openOrder} onDelete={removeOrder} /> : null}
         {route === 'create' ? <CreateScreen t={t} draft={draft} setDraft={setDraft} vendors={vendors} delivs={delivs} onPreview={() => setRoute('preview')} onHome={() => setRoute('home')} flash={flash} /> : null}
         {route === 'preview' ? <PreviewScreen t={t} draft={draft} onBack={() => setRoute('create')} onSend={sendOrder} flash={flash} /> : null}
         {route === 'vendors' ? <MasterScreen t={t} vendors={vendors} setVendors={setVendors} delivs={delivs} setDelivs={setDelivs} defaultId={defaultId} setDefaultId={setDefaultId} onUse={(v) => newOrder(v)} flash={flash} /> : null}

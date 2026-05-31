@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>発注書アプリ ご利用ガイド｜株式会社 桜井電装</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --navy:#1d3a52; --navy-d:#122a3d; --cream:#f3f1ea; --paper:#fff;
+    --ink:#22303a; --sub:#5e6a73; --line:#ddd8c9; --accent:#2f7d6b; --accentbg:#e9f1ed;
+    --warn:#b9863f; --warnbg:#fbf3e3; --danger:#bc564d;
+    --serif:"Noto Serif JP",serif; --sans:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.8;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px;margin:0 auto;padding:0 18px 80px;}
+
+  header.cover{background:var(--navy);color:#fff;padding:44px 0 38px;}
+  .cover .inner{max-width:880px;margin:0 auto;padding:0 22px;}
+  .cover .brand{font-family:var(--serif);font-size:14px;letter-spacing:.08em;opacity:.85;}
+  .cover h1{font-family:var(--serif);font-size:30px;margin:8px 0 6px;font-weight:700;letter-spacing:.02em;}
+  .cover p{margin:0;opacity:.9;font-size:14px;}
+  .cover .url{display:inline-block;margin-top:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+    padding:8px 14px;border-radius:8px;font-family:ui-monospace,monospace;font-size:14px;}
+
+  nav.toc{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin:26px 0;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+  nav.toc h2{margin:0 0 10px;font-size:15px;color:var(--navy);}
+  nav.toc ol{margin:0;padding-left:1.4em;}
+  nav.toc a{color:var(--ink);text-decoration:none;}
+  nav.toc a:hover{color:var(--accent);text-decoration:underline;}
+
+  section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:8px 26px 26px;margin:22px 0;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+  h2.sec{font-family:var(--serif);font-size:22px;color:var(--navy);border-bottom:3px solid var(--navy);padding-bottom:8px;margin:22px 0 6px;}
+  h3{font-size:17px;color:var(--navy);margin:26px 0 8px;display:flex;align-items:center;gap:10px;}
+  h3 .badge{background:var(--accent);color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:2px 11px;white-space:nowrap;}
+  p{margin:8px 0;}
+  ul,ol{margin:8px 0;padding-left:1.5em;}
+  li{margin:5px 0;}
+  .lead{color:var(--sub);font-size:14.5px;}
+
+  /* 手順ステップ */
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:12px 0;}
+  ol.steps>li{counter-increment:s;position:relative;padding:10px 0 10px 46px;border-bottom:1px dashed var(--line);}
+  ol.steps>li:last-child{border-bottom:none;}
+  ol.steps>li::before{content:counter(s);position:absolute;left:0;top:9px;width:30px;height:30px;border-radius:999px;
+    background:var(--navy);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px;}
+
+  .key{display:inline-block;background:var(--cream);border:1px solid var(--line);border-radius:6px;padding:1px 8px;font-weight:700;color:var(--navy);font-size:13px;white-space:nowrap;}
+  .tab{display:inline-block;background:var(--navy);color:#fff;border-radius:7px;padding:2px 10px;font-weight:700;font-size:13px;white-space:nowrap;}
+  .btn{display:inline-block;background:var(--accentbg);color:#1c6b56;border:1px solid #bfe7da;border-radius:7px;padding:2px 10px;font-weight:700;font-size:13px;white-space:nowrap;}
+
+  .note{border-radius:10px;padding:12px 16px;margin:14px 0;font-size:14px;}
+  .note.tip{background:var(--accentbg);border:1px solid #bfe7da;}
+  .note.warn{background:var(--warnbg);border:1px solid #ecd9b0;}
+  .note.imp{background:#fdeceb;border:1px solid #f3c9c5;}
+  .note b{color:var(--navy);}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:var(--cream);color:var(--navy);white-space:nowrap;}
+
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0;}
+  .flow .step{background:var(--cream);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-weight:700;font-size:13.5px;color:var(--navy);}
+  .flow .arrow{color:var(--accent);font-weight:700;}
+
+  footer{color:var(--sub);font-size:13px;text-align:center;margin-top:30px;}
+  .printbar{text-align:right;margin:18px 0 -8px;}
+  .printbar button{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+  @media print{
+    body{background:#fff;}
+    header.cover{background:#fff;color:#000;border-bottom:2px solid #000;}
+    .cover .brand,.cover h1,.cover p{color:#000;}
+    .cover .url{background:#fff;border:1px solid #000;}
+    section,nav.toc{box-shadow:none;border:1px solid #bbb;break-inside:avoid;}
+    .printbar{display:none;}
+    h2.sec{break-before:auto;}
+  }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <div class="inner">
+    <div class="brand">SAKURAI DENSO CO., LTD.</div>
+    <h1>発注書アプリ ご利用ガイド</h1>
+    <p>音声で話すだけ。AIが明細を整理し、発注書PDFを作成します。</p>
+    <a class="url" href="https://hachuusho.sakuraidenso.net/">https://hachuusho.sakuraidenso.net/</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="printbar"><button onclick="window.print()">🖨 このガイドを印刷／PDF保存</button></div>
+
+  <nav class="toc">
+    <h2>目次</h2>
+    <ol>
+      <li><a href="#start">アプリを開く・ログイン</a></li>
+      <li><a href="#setup">初期設定（最初に1回だけ）</a></li>
+      <li><a href="#create">発注書の作り方</a></li>
+      <li><a href="#after">作成後の流れ（PDFの送付）</a></li>
+      <li><a href="#faq">困ったとき・ご注意</a></li>
+    </ol>
+  </nav>
+
+  <!-- 0 -->
+  <section id="start">
+    <h2 class="sec">1. アプリを開く・ログイン</h2>
+    <p class="lead">パソコンでもスマートフォンでも使えます。下記URLを開いてください。</p>
+    <ol class="steps">
+      <li>ブラウザ（スマホは Safari / Chrome）で <span class="key">https://hachuusho.sakuraidenso.net/</span> を開きます。</li>
+      <li>ログイン画面で <b>メールアドレス</b>（許可されたアドレス）を入力します。</li>
+      <li>そのメールに届く <b>6桁のコード</b> を入力すると、アプリが開きます。<b>パスワードは不要</b>です。</li>
+    </ol>
+    <div class="note tip"><b>ヒント：</b>一度ログインすると、その端末では<b>約30日間（約1ヶ月）ログイン状態が保たれます</b>。毎回コードを入れる必要はありません。</div>
+    <h3><span class="badge">スマホ推奨</span>ホーム画面に追加して“アプリ化”</h3>
+    <ul>
+      <li><b>iPhone（Safari）：</b>共有ボタン <b>［↑］</b> →「ホーム画面に追加」</li>
+      <li><b>Android（Chrome）：</b>メニュー <b>［⋮］</b> →「ホーム画面に追加」（または表示されるバナー）</li>
+    </ul>
+    <p>追加すると、ホーム画面のアイコンから普通のアプリのように起動できます。</p>
+  </section>
+
+  <!-- 1 -->
+  <section id="setup">
+    <h2 class="sec">2. 初期設定（最初に1回だけ）</h2>
+    <p class="lead">最初はお試し用の<b>サンプルデータ</b>が入っています。これを消して、実際の取引先などを登録します。画面下のタブは <span class="tab">ホーム</span> <span class="tab">＋</span> <span class="tab">マスタ</span> の3つです。</p>
+
+    <h3><span class="badge">2-A</span>サンプルデータを削除する</h3>
+    <p><b>① 発注先のサンプルを消す／置き換える</b></p>
+    <ol class="steps">
+      <li>下のタブ <span class="tab">マスタ</span> を開き、上部で <b>「発注先」</b> を選びます。</li>
+      <li>サンプル会社（中西電機工業／関東配線資材センター 等）をタップします。</li>
+      <li>右上の <span class="btn">編集</span> で自社の実際の取引先に<b>書き換えて保存</b>、または <span class="btn">この発注先を削除</span> で消します。</li>
+    </ol>
+    <p><b>② 納品場所のサンプルを消す</b></p>
+    <ol class="steps">
+      <li><span class="tab">マスタ</span> → 上部で <b>「納品場所」</b> を選びます。</li>
+      <li>各行の <b>🗑（ゴミ箱）</b> で削除、<b>✏（鉛筆）</b> で名称を編集できます。</li>
+    </ol>
+    <div class="note warn"><b>ご注意：</b>納品場所は<b>最低1件</b>必要です。すべては消せないので、最後の1件は「編集」で実際の場所名に書き換えてお使いください。</div>
+    <p><b>③ 発注履歴のサンプルを消す</b></p>
+    <ol class="steps">
+      <li>下のタブ <span class="tab">ホーム</span> を開きます。</li>
+      <li>サンプルの発注履歴（「下書き」「最近の発注」）の各行 右側の <b>🗑（ゴミ箱）</b> をタップし、確認して削除します。</li>
+    </ol>
+
+    <h3><span class="badge">2-B</span>マスタ（発注先・納品場所）を登録する</h3>
+    <p><b>発注先を追加する</b></p>
+    <ol class="steps">
+      <li><span class="tab">マスタ</span> →「発注先」→ 右上の <span class="btn">＋</span> または <span class="btn">発注先を追加</span> をタップ。</li>
+      <li>会社名（必須）・敬称（御中／様）・フリガナ・電話・担当・<b>既定の納品場所</b>・タグ を入力します。</li>
+      <li>右上の <span class="btn">保存</span>（または下の「保存する」）で登録完了。</li>
+    </ol>
+    <div class="note tip"><b>「既定の発注先」：</b>発注先の詳細画面で <span class="btn">既定の発注先にする</span> を押すと、新規作成時に最初から選ばれた状態になります（よく使う取引先を設定）。</div>
+    <p><b>納品場所を追加する</b></p>
+    <ol class="steps">
+      <li><span class="tab">マスタ</span> →「納品場所」→ 右上の <span class="btn">＋</span> または <span class="btn">納品場所を追加</span>。</li>
+      <li>名称（例：弊社（東京）／現場直送 など）を入力し <span class="btn">保存</span>。</li>
+    </ol>
+    <p>ここで登録した発注先・納品場所は、発注書作成時に<b>プルダウンから選べる</b>ようになります。</p>
+  </section>
+
+  <!-- 2 -->
+  <section id="create">
+    <h2 class="sec">3. 発注書の作り方</h2>
+    <div class="flow">
+      <span class="step">新規作成</span><span class="arrow">→</span>
+      <span class="step">話してAIで明細化</span><span class="arrow">→</span>
+      <span class="step">内容を確認・修正</span><span class="arrow">→</span>
+      <span class="step">PDFをダウンロード</span>
+    </div>
+    <ol class="steps">
+      <li>画面下中央の <span class="tab">＋</span> をタップして新規作成を開きます。</li>
+      <li><b>発注年月日</b>（初期値=本日）・<b>発注書No.</b>（自動採番）が入っています。必要なら<b>納品期限</b>を選びます。</li>
+      <li><b>発注先・納品場所</b>を<b>プルダウンから選択</b>します（マスタで登録したものが出ます）。</li>
+    </ol>
+
+    <h3><span class="badge">3-A</span>AI（音声）で明細を作る</h3>
+    <ol class="steps">
+      <li>「明細」の<b>「話して入力」</b>欄に、発注したい品物を話す／入力します。<br>
+        例）「<i>パナソニックの分電盤 BQR34204 を2面、テンパールの安全ブレーカ B-32 を4個</i>」</li>
+      <li><b>話す方法：</b><span class="btn">録音</span> ボタンを押して話す、または入力欄をタップして<b>スマホのキーボードのマイク</b>で話します。</li>
+      <li><span class="btn">✨ AIで変換</span> を押すと、AIが<b>メーカー・型式／品名・数量・備考</b>に自動で振り分けて明細に入力します。</li>
+    </ol>
+    <div class="note imp"><b>必ずご確認ください：</b>AIや音声は<b>聞き間違い・取り違え</b>をすることがあります。特に<b>型式（品番）と数量</b>は、変換後に必ず目で確認し、必要なら手で修正してください。</div>
+
+    <h3><span class="badge">3-B</span>明細の行を追加・修正する（2行・3行…）</h3>
+    <ul>
+      <li><b>行を増やす：</b>明細の下の <span class="btn">＋ 行を追加</span> を押すと、1行・2行・3行…といくらでも追加できます。</li>
+      <li><b>手入力：</b>各行の メーカー／型式・品番／品名／数量（＋単位）／備考 を直接入力・修正できます。</li>
+      <li><b>行を消す：</b>各行の右上 <b>🗑（ゴミ箱）</b> でその行を削除します。</li>
+    </ul>
+    <div class="note tip"><b>使い方の例：</b>まず「話してAIで変換」で大まかに入れる → 足りない品物は <b>「＋行を追加」</b> で足す → 数量や型式を整える、という流れが効率的です。</div>
+
+    <h3><span class="badge">3-C</span>PDFを作成してダウンロードする</h3>
+    <ol class="steps">
+      <li>入力できたら、画面下の <span class="btn">プレビュー・PDFを作成</span> を押します。</li>
+      <li>発注書のレイアウトが表示されます。内容を確認します。</li>
+      <li><span class="btn">PDFをダウンロード</span> を押すと、発注書PDF（ファイル名：<span class="key">発注書_NK-AAA-…….pdf</span>）が端末に保存されます。</li>
+      <li>左の <span class="btn">保存して一覧へ</span> を押すと、<b>ホームの発注履歴に記録</b>されます（後から見返せます）。</li>
+    </ol>
+    <div class="note tip"><b>保存先：</b>スマホは「ファイル」アプリやダウンロードフォルダ、PCは「ダウンロード」フォルダに保存されます。</div>
+  </section>
+
+  <!-- 3 -->
+  <section id="after">
+    <h2 class="sec">4. 作成後の流れ（PDFの送付）</h2>
+    <p>このアプリは<b>発注書PDFの作成・ダウンロードまで</b>を行います。<b>送付（メール）は、ダウンロードしたPDFをお客さまご自身でメールに添付して送ってください。</b></p>
+    <div class="flow">
+      <span class="step">PDFをダウンロード</span><span class="arrow">→</span>
+      <span class="step">メールに添付</span><span class="arrow">→</span>
+      <span class="step">取引先へ送信</span>
+    </div>
+    <ul>
+      <li><b>スマホの場合：</b>ダウンロードしたPDFを開き、<b>共有 ［↑］</b> →「メール」を選んで、宛先を入れて送信。</li>
+      <li><b>パソコンの場合：</b>いつものメールソフトで新規メールを作成し、ダウンロードした<b>PDFを添付</b>して送信。</li>
+    </ul>
+    <div class="note tip"><b>ヒント：</b>件名や本文の定型文（例：「発注書をお送りします。ご手配のほどよろしくお願いいたします。」）を用意しておくと、毎回の送付がスムーズです。</div>
+  </section>
+
+  <!-- 4 -->
+  <section id="faq">
+    <h2 class="sec">5. 困ったとき・ご注意</h2>
+    <table>
+      <tr><th>項目</th><th>内容</th></tr>
+      <tr>
+        <td>データの保存場所</td>
+        <td><b>入力したマスタ・発注履歴は、使っている端末（ブラウザ）の中に保存されます。</b>別のスマホ・別のパソコンとは共有されません。複数台で使う場合は、それぞれで初期設定（マスタ登録）が必要です。</td>
+      </tr>
+      <tr>
+        <td>ログインできない</td>
+        <td>許可されたメールアドレスのみログインできます。アドレスを追加したい場合は管理者（桜井電装様）へご連絡ください。コードが届かない場合は迷惑メールフォルダもご確認ください。</td>
+      </tr>
+      <tr>
+        <td>画面が新しくならない</td>
+        <td>ブラウザを更新（再読み込み）してください。スマホは一度アプリを閉じて開き直すと最新になります。</td>
+      </tr>
+      <tr>
+        <td>音声がうまく変換されない</td>
+        <td>ゆっくり区切って話す／「、」で品物を区切ると精度が上がります。うまくいかない時は、明細欄に<b>直接入力</b>するか、行を追加して手で修正してください。</td>
+      </tr>
+      <tr>
+        <td>マイクが使えない</td>
+        <td>初回はブラウザの「マイクの使用を許可しますか？」で<b>許可</b>してください。反応しない端末では、入力欄をタップして<b>キーボードのマイク</b>から話す方法が確実です。</td>
+      </tr>
+      <tr>
+        <td>金額・単価について</td>
+        <td>本アプリの発注書には金額欄はありません（数量までの様式です）。</td>
+      </tr>
+    </table>
+    <div class="note tip"><b>基本の流れ（まとめ）：</b>
+      <b>＋</b> 新規 → 発注先・納品場所を選ぶ → 「話して入力」→ <b>AIで変換</b> → 内容を確認・修正（行追加も可）→ <b>プレビュー・PDFを作成</b> → <b>PDFをダウンロード</b> → メールで送付。
+    </div>
+  </section>
+
+  <footer>
+    発注書アプリ ご利用ガイド ／ 株式会社 桜井電装<br>
+    ご不明な点は、本アプリの導入担当者までお問い合わせください。
+  </footer>
+
+</div>
+</body>
+</html>
