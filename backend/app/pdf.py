@@ -97,7 +97,7 @@ TEMPLATE = Template(r"""<!doctype html>
     <colgroup><col style="width:80pt"><col style="width:140.4pt"><col style="width:80pt"><col style="width:256.6pt"></colgroup>
     <tbody><tr>
       <td class="k">納品期限</td><td>{{ due_date }}</td>
-      <td class="k">納品場所</td><td>{{ deliv }}</td>
+      <td class="k">納品場所</td><td>{{ deliv }}{% if deliv_addr %}<div style="font-size:9pt;margin-top:2pt;">{{ deliv_addr }}</div>{% endif %}</td>
     </tr></tbody>
   </table>
 
@@ -151,6 +151,7 @@ def render_order_pdf(order: dict) -> bytes:
         no=escape(order.get("no") or ""),
         due_date=escape(jp_date(order.get("dueDate") or "")),
         deliv=escape(order.get("deliv") or ""),
+        deliv_addr=escape(order.get("delivAddr") or ""),
         self_name=escape(SELF["name"]),
         self_zip=escape(SELF["zip"]),
         self_addr=escape(SELF["addr"]),

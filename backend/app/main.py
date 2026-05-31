@@ -32,6 +32,7 @@ class Order(BaseModel):
     vendorName: str = ""
     vendorHonor: str = "御中"
     deliv: str = ""
+    delivAddr: str = ""
     items: list[Item] = []
 
 

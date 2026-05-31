@@ -14,12 +14,13 @@ function saveLS(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
 }
 
-function freshDraft(vendor, delivName) {
+function freshDraft(vendor, delivName, delivAddr) {
   const d = todayISO();
   return {
     orderDate: d, dueDate: addDaysISO(12), no: genNo(d),
     vendor,
     deliv: delivName || vendor.deliv || '',
+    delivAddr: delivAddr || '',
     items: [{ maker: '', model: '', name: '', qty: '', unit: '個', note: '' }],
   };
 }
@@ -32,7 +33,7 @@ function PhoneApp({ themeKey }) {
   const [delivs, setDelivs] = useStateA(() => loadLS(LS_DELIVS, SEED_DELIVS));
   const [defaultId, setDefaultId] = useStateA(() => loadLS(LS_DEFAULT, 'v1'));
   const defVendor = useMemoA(() => vendors.find(v => v.id === defaultId) || vendors[0], [vendors, defaultId]);
-  const [draft, setDraft] = useStateA(() => freshDraft(SEED_VENDORS[0], SEED_VENDORS[0].deliv));
+  const [draft, setDraft] = useStateA(() => freshDraft(SEED_VENDORS[0], SEED_VENDORS[0].deliv, ''));
   const [toast, setToast] = useStateA('');
   const flash = (m) => { setToast(m); clearTimeout(window['_qpT' + themeKey]); window['_qpT' + themeKey] = setTimeout(() => setToast(''), 2400); };
 
@@ -43,7 +44,8 @@ function PhoneApp({ themeKey }) {
 
   function newOrder(vendor) {
     const v = vendor || defVendor;
-    setDraft(freshDraft(v, v.deliv));
+    const dl = delivs.find(d => d.name === v.deliv);
+    setDraft(freshDraft(v, v.deliv, dl ? dl.addr : ''));
     setRoute('create');
   }
   function removeOrder(o) {
@@ -52,13 +54,14 @@ function PhoneApp({ themeKey }) {
   }
   function openOrder(o) {
     const v = vendors.find(x => x.name === o.vendor) || defVendor;
-    setDraft({ orderDate: o.date, dueDate: o.due, no: o.no === '（下書き）' ? genNo(o.date) : o.no, vendor: v, deliv: o.deliv || v.deliv || '', items: o.items.map(x => ({ unit: '個', note: '', ...x })) });
+    const dl = delivs.find(d => d.name === (o.deliv || v.deliv));
+    setDraft({ orderDate: o.date, dueDate: o.due, no: o.no === '（下書き）' ? genNo(o.date) : o.no, vendor: v, deliv: o.deliv || v.deliv || '', delivAddr: o.delivAddr != null ? o.delivAddr : (dl ? dl.addr : ''), items: o.items.map(x => ({ unit: '個', note: '', ...x })) });
     setRoute(o.status === 'draft' ? 'create' : 'preview');
   }
   function sendOrder() {
     const items = draft.items.filter(it => it.maker || it.model || it.name || it.qty);
     setHistory(h => [{
-      id: 'n' + Date.now(), no: draft.no, vendor: draft.vendor.name, deliv: draft.deliv, date: draft.orderDate,
+      id: 'n' + Date.now(), no: draft.no, vendor: draft.vendor.name, deliv: draft.deliv, delivAddr: draft.delivAddr || '', date: draft.orderDate,
       due: draft.dueDate, status: 'sent', lines: items.length, qty: items.reduce((s, it) => s + (parseInt(it.qty) || 0), 0), items,
     }, ...h.filter(o => o.status !== 'draft')]);
     setRoute('home'); flash('発注書を保存しました');

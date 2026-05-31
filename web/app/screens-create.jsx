@@ -341,10 +341,17 @@ function CreateScreen({ t, draft, setDraft, vendors = [], delivs = [], onPreview
           </SelectInput>
         </Field>
         <Field t={t} label="納品場所">
-          <SelectInput t={t} value={draft.deliv} onChange={e => set('deliv', e.target.value)}>
+          <SelectInput t={t} value={draft.deliv} onChange={e => {
+            const name = e.target.value;
+            const dl = delivs.find(d => d.name === name);
+            setDraft(d => ({ ...d, deliv: name, delivAddr: dl ? (dl.addr || '') : (d.delivAddr || '') }));
+          }}>
             {delivs.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
             {draft.deliv && delivs.every(d => d.name !== draft.deliv) ? <option value={draft.deliv}>{draft.deliv}</option> : null}
           </SelectInput>
+        </Field>
+        <Field t={t} label="納品先住所" hint="現場直送など、住所が必要な場合に入力（弊社などは空欄でOK）">
+          <TextInput t={t} value={draft.delivAddr || ''} placeholder="例）東京都〇〇区〇〇 1-2-3 〇〇現場" onChange={e => set('delivAddr', e.target.value)} />
         </Field>
 
         <SectionRule t={t}>明　細</SectionRule>

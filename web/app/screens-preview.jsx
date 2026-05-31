@@ -8,7 +8,7 @@ async function downloadSheetPDF(draft, flash) {
     const payload = {
       no: draft.no, orderDate: draft.orderDate, dueDate: draft.dueDate,
       vendorName: draft.vendor.name, vendorHonor: draft.vendor.honor || '御中',
-      deliv: draft.deliv || draft.vendor.deliv || '',
+      deliv: draft.deliv || draft.vendor.deliv || '', delivAddr: draft.delivAddr || '',
       items: draft.items.filter(it => it.maker || it.model || it.name || it.qty),
     };
     const res = await fetch('/api/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -140,7 +140,12 @@ function PreviewScreen({ t, draft, onBack, onSend, flash }) {
             <div style={delivLbl}>納品期限</div>
             <div style={{ ...delivVal, borderRight: '1px solid #000' }}>{jpDate(draft.dueDate)}</div>
             <div style={delivLbl}>納品場所</div>
-            <div style={delivVal}>{draft.deliv || draft.vendor.deliv}</div>
+            <div style={delivVal}>
+              <span>
+                <span style={{ display: 'block' }}>{draft.deliv || draft.vendor.deliv}</span>
+                {draft.delivAddr ? <span style={{ display: 'block', fontSize: 10, color: '#333' }}>{draft.delivAddr}</span> : null}
+              </span>
+            </div>
           </div>
 
           {/* 明細表 */}

@@ -177,8 +177,9 @@ function MasterScreen({ t, vendors, setVendors, delivs, setDelivs, defaultId, se
   function saveDeliv(d) {
     const name = (d.name || '').trim();
     if (!name) { flash('名称を入力してください'); return; }
+    const addr = (d.addr || '').trim();
     const exists = delivs.some(x => x.id === d.id);
-    setDelivs(prev => exists ? prev.map(x => x.id === d.id ? { ...x, name } : x) : [...prev, { id: 'dl' + Date.now(), name }]);
+    setDelivs(prev => exists ? prev.map(x => x.id === d.id ? { ...x, name, addr } : x) : [...prev, { id: 'dl' + Date.now(), name, addr }]);
     setDForm(null); flash(exists ? '納品場所を更新しました' : '納品場所を追加しました');
   }
   function removeDeliv(d) {
@@ -203,7 +204,7 @@ function MasterScreen({ t, vendors, setVendors, delivs, setDelivs, defaultId, se
       onSetDefault={() => { setDefaultId(detail.id); flash(`${detail.name}を既定に設定`); }} />;
   }
 
-  const onAdd = () => tab === 'vendors' ? setVForm(blankVendor(delivs)) : setDForm({ id: '', name: '' });
+  const onAdd = () => tab === 'vendors' ? setVForm(blankVendor(delivs)) : setDForm({ id: '', name: '', addr: '' });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -251,7 +252,10 @@ function MasterScreen({ t, vendors, setVendors, delivs, setDelivs, defaultId, se
                 <span style={{ width: 40, height: 40, borderRadius: t.radiusSm, background: hexA(t.primary, .1), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Icon name="truck" size={20} color={t.primary} />
                 </span>
-                <span style={{ flex: 1, minWidth: 0, fontFamily: t.fontHead, fontWeight: 700, color: t.ink, fontSize: 15.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: 'block', fontFamily: t.fontHead, fontWeight: 700, color: t.ink, fontSize: 15.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</span>
+                  {d.addr ? <span style={{ display: 'block', fontSize: 12, color: t.sub, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.addr}</span> : null}
+                </span>
                 <button onClick={() => setDForm(d)} aria-label="編集" style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 6, display: 'flex' }}><Icon name="edit" size={18} color={t.primary} /></button>
                 <button onClick={() => removeDeliv(d)} aria-label="削除" style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 6, display: 'flex' }}><Icon name="trash" size={18} color={t.danger} /></button>
               </div>
@@ -314,11 +318,13 @@ function VendorEditScreen({ t, draft, delivs, onCancel, onSave }) {
 
 // 納品場所の編集（全画面）
 function DelivEditScreen({ t, draft, onCancel, onSave }) {
-  const [name, setName] = useStateH(() => (draft && draft.name) || '');
-  React.useEffect(() => { setName((draft && draft.name) || ''); }, [draft]);
+  const init = () => ({ name: (draft && draft.name) || '', addr: (draft && draft.addr) || '' });
+  const [f, setF] = useStateH(init);
+  React.useEffect(() => { setF(init()); }, [draft]);
+  const set = (k, v) => setF(p => ({ ...p, [k]: v }));
   const editing = !!(draft && draft.id);
-  const canSave = !!name.trim();
-  const save = () => { if (canSave) onSave({ id: draft ? draft.id : '', name }); };
+  const canSave = !!f.name.trim();
+  const save = () => { if (canSave) onSave({ id: draft ? draft.id : '', name: f.name, addr: f.addr }); };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <AppHeader t={t} title={editing ? '納品場所を編集' : '納品場所を追加'}
@@ -326,7 +332,10 @@ function DelivEditScreen({ t, draft, onCancel, onSave }) {
         right={<SaveHeaderBtn t={t} canSave={canSave} onSave={save} />} />
       <div style={{ flex: 1, overflowY: 'auto', padding: `${t.pad}px ${t.pad}px calc(env(safe-area-inset-bottom) + 28px)` }}>
         <Field t={t} label="納品場所名" req>
-          <TextInput t={t} value={name} placeholder="例）弊社（東京）／現場直送" onChange={e => setName(e.target.value)} />
+          <TextInput t={t} value={f.name} placeholder="例）弊社（東京）／現場直送／倉庫（埼玉）" onChange={e => set('name', e.target.value)} />
+        </Field>
+        <Field t={t} label="住所" hint="弊社などは空欄でOK。住所が固定の場所はここに登録（現場直送は作成時にその都度入力できます）">
+          <TextInput t={t} value={f.addr} placeholder="例）埼玉県〇〇市〇〇 1-2-3" onChange={e => set('addr', e.target.value)} />
         </Field>
         <Btn t={t} kind="primary" full size="lg" style={{ marginTop: 6 }} disabled={!canSave} onClick={save}>
           <Icon name="check" size={20} color={t.onPrimary} sw={2.4} />保存する
